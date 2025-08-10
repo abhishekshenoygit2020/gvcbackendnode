@@ -428,7 +428,7 @@ module.exports = {
         var commissionEarned = 0;
 
         const {
-            userId, commission, originalCost, giftCardCredit, dealership, user, useromvicno, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+            commercialVehicle,userId, commission, originalCost, giftCardCredit, dealership, user, useromvicno, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
             warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText, highRatioCoverageText, highRatioCoveragePriceText,
             deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText, provinceText, postalCodeText, customerPhoneText,
             customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText, financeCompanyText, vehicleDeliveryDateText,
@@ -473,9 +473,9 @@ module.exports = {
                               comprehensiveFactoryWarrantyValid, language, serviceDate,
                                warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
                                customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
-                               financeCompany, vehicleDeliveryDate, warrantySoldFor,Status,packages, packagesTypes, productIndex, productCost, packagesText, productName,user,dealership,currentDate,warrantyApplicationDate,createdDate,useromvicno,invno,merchantno,commission,commissionEarned,giftCardCredit,originalCost,userId
+                               financeCompany, vehicleDeliveryDate, warrantySoldFor,Status,packages, packagesTypes, productIndex, productCost, packagesText, productName,user,dealership,currentDate,warrantyApplicationDate,createdDate,useromvicno,invno,merchantno,commission,commissionEarned,giftCardCredit,originalCost,userId,commercialVehicle
                        )
-                    VALUES (?,?, ?, ?, ?, ?,?,?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?, ?, ?,?, ?, ?,?, ?,?, ?,?, ?,?, ?,?, ?, ?,?, ?,?, ?,?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    VALUES (?,?, ?, ?, ?, ?,?,?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?, ?, ?,?, ?, ?,?, ?,?, ?,?, ?,?, ?,?, ?, ?,?, ?,?, ?,?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                 `, [
                 vinNoText, makeText, modelText, yearText, odometerText,
                 salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
@@ -489,7 +489,7 @@ module.exports = {
                 comprehensiveFactoryWarrantyValid, language, serviceDate,
                 warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
                 customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
-                financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate, warrantyApplicationDate, currentDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId
+                financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate, warrantyApplicationDate, currentDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId,commercialVehicle
 
             ],
                 (err, results) => {
@@ -563,7 +563,7 @@ module.exports = {
 
 
         const {
-            id, userId, giftCardCredit, originalCost, commission, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+           commercialVehicle,id, userId, giftCardCredit, originalCost, commission, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
             warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText, highRatioCoverageText, highRatioCoveragePriceText,
             deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText, provinceText, postalCodeText, customerPhoneText,
             customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText, financeCompanyText, vehicleDeliveryDateText,
@@ -608,7 +608,7 @@ module.exports = {
                     customerFirstName = ?, customerLastName = ?, streetAddress = ?, town = ?, province = ?, postalCode = ?, customerPhone = ?, customerEmail = ?, driverLicence = ?, 
                     customerLanguage = ?, dealNotes = ?, vinCust = ?, salePriceofVehicleCust = ?, financeCompany = ?, vehicleDeliveryDate = ?, warrantySoldFor = ?, Status = ?, 
                     packages = ?, packagesTypes = ?, productIndex = ?, productCost = ?, packagesText = ?, productName = ?, user = ?, dealership = ?, currentDate = ?, warrantyApplicationDate = ?,  
-                    useromvicno = ?, invno = ?, merchantno = ?,commission = ?,commissionEarned = ?,giftCardCredit = ?,originalCost = ?, userId = ?
+                    useromvicno = ?, invno = ?, merchantno = ?,commission = ?,commissionEarned = ?,giftCardCredit = ?,originalCost = ?, userId = ?, commercialVehicle = ?
                 WHERE id = ?`,
                 [
                     vinNoText, makeText, modelText, yearText, odometerText,
@@ -624,7 +624,7 @@ module.exports = {
                     warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
                     customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
                     financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate,
-                    warrantyApplicationDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId,  // invno updated if status is "closed won"
+                    warrantyApplicationDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId,commercialVehicle,  // invno updated if status is "closed won"
                     id // WHERE condition
                 ],
                 (err, results) => {

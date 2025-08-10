@@ -26,99 +26,99 @@ app.listen(process.env.APP_PORT, () => {
     console.log("server is running......", process.env.APP_PORT);
 });
 
-cron.schedule('* * * * *', () => {
-    console.log('Running scheduled task every minute');
+// cron.schedule('* * * * *', () => {
+//     // console.log('Running scheduled task every minute');
 
-//     pool.query(`SELECT 
-//     DATE_FORMAT(CurrentDate, '%Y-%m') AS Month,
-//     dealership.id AS dealership,
-//      dealership.tradeName,
-//     SUM(productCost) AS totalCost
-//     FROM 
-//     warranty
-// INNER JOIN 
-//     dealership ON dealership.id = warranty.dealership
-// WHERE 
-//     warranty.Status = 'Closed Won'
-// GROUP BY 
-//     DATE_FORMAT(CurrentDate, '%Y-%m'),
-//     Dealership  
-// ORDER BY Month ASC`,
-//         [
-//             // id
-//         ],
-//         (err, results) => {
-//             if (err) {
-//                 return res.status(500).json({
-//                     sucsess: 1,
-//                     data: "Something Went Wrong"
-//                 });
+// //     pool.query(`SELECT 
+// //     DATE_FORMAT(CurrentDate, '%Y-%m') AS Month,
+// //     dealership.id AS dealership,
+// //      dealership.tradeName,
+// //     SUM(productCost) AS totalCost
+// //     FROM 
+// //     warranty
+// // INNER JOIN 
+// //     dealership ON dealership.id = warranty.dealership
+// // WHERE 
+// //     warranty.Status = 'Closed Won'
+// // GROUP BY 
+// //     DATE_FORMAT(CurrentDate, '%Y-%m'),
+// //     Dealership  
+// // ORDER BY Month ASC`,
+// //         [
+// //             // id
+// //         ],
+// //         (err, results) => {
+// //             if (err) {
+// //                 return res.status(500).json({
+// //                     sucsess: 1,
+// //                     data: "Something Went Wrong"
+// //                 });
 
-//             } else if (results.length == 0) {
-//                 return res.status(200).json({
-//                     sucsess: 1,
-//                     data: "Data Not Found"
-//                 });
+// //             } else if (results.length == 0) {
+// //                 return res.status(200).json({
+// //                     sucsess: 1,
+// //                     data: "Data Not Found"
+// //                 });
 
-//             } else {
+// //             } else {
 
-//                 const tableRows = results.map(item => `
-//     <tr>
-//         <td>${item.Month || '-'}</td>
-//         <td>${item.tradeName}</td>
-//         <td>${item.totalCost}</td>
-//     </tr>
-// `).join('');
+// //                 const tableRows = results.map(item => `
+// //     <tr>
+// //         <td>${item.Month || '-'}</td>
+// //         <td>${item.tradeName}</td>
+// //         <td>${item.totalCost}</td>
+// //     </tr>
+// // `).join('');
 
-//                 const mailReq = {
-//                     to: "abhishekshenoy97@gmail.com",
-//                     subject: "Get Covered Canada Login Credentials!",
-//                     html: `
-//         <p>Dear abhishek,</p>
+// //                 const mailReq = {
+// //                     to: "abhishekshenoy97@gmail.com",
+// //                     subject: "Get Covered Canada Login Credentials!",
+// //                     html: `
+// //         <p>Dear abhishek,</p>
 
-//         <p>Welcome to Get Covered Canada!<br></p>
+// //         <p>Welcome to Get Covered Canada!<br></p>
         
 
-//         <p><b>Warranty Summary Report:</b></p>
-//         <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-//             <thead>
-//                 <tr>
-//                     <th>Month</th>
-//                     <th>Dealership</th>
-//                     <th>Total Cost</th>
-//                 </tr>
-//             </thead>
-//             <tbody>
-//                 ${tableRows}
-//             </tbody>
-//         </table>
+// //         <p><b>Warranty Summary Report:</b></p>
+// //         <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+// //             <thead>
+// //                 <tr>
+// //                     <th>Month</th>
+// //                     <th>Dealership</th>
+// //                     <th>Total Cost</th>
+// //                 </tr>
+// //             </thead>
+// //             <tbody>
+// //                 ${tableRows}
+// //             </tbody>
+// //         </table>
 
-//         <p>You can log in using the credentials above to access the portal. Once logged in, you’ll have access to tools that simplify warranty registrations and enhance your operations.</p>
+// //         <p>You can log in using the credentials above to access the portal. Once logged in, you’ll have access to tools that simplify warranty registrations and enhance your operations.</p>
 
-//         <p><b>Getting Started:</b></p>
-//         <ol>
-//             <li>Visit the Portal URL provided above.</li>
-//             <li>Log in using your unique username and password.</li>
-//             <li>Begin exploring the portal and registering warranties.</li>
-//         </ol>
+// //         <p><b>Getting Started:</b></p>
+// //         <ol>
+// //             <li>Visit the Portal URL provided above.</li>
+// //             <li>Log in using your unique username and password.</li>
+// //             <li>Begin exploring the portal and registering warranties.</li>
+// //         </ol>
 
-//         <p>Should you encounter any issues or have questions while getting started, our support team is here to assist. Feel free to reach out to us at <a href="mailto:support@getcoveredcanada.com">support@getcoveredcanada.com</a> or call 1-800-268-3284.</p>
+// //         <p>Should you encounter any issues or have questions while getting started, our support team is here to assist. Feel free to reach out to us at <a href="mailto:support@getcoveredcanada.com">support@getcoveredcanada.com</a> or call 1-800-268-3284.</p>
 
-//         <p>Thank you for choosing Get Covered Canada. We look forward to supporting your dealership and ensuring a seamless experience.</p>
+// //         <p>Thank you for choosing Get Covered Canada. We look forward to supporting your dealership and ensuring a seamless experience.</p>
 
-//         <p>Best regards,<br>
-//         The Get Covered Canada Team</p>
-//     `
-//                 };
+// //         <p>Best regards,<br>
+// //         The Get Covered Canada Team</p>
+// //     `
+// //                 };
 
-//                 mail(mailReq);
+// //                 mail(mailReq);
 
 
 
-//             }
-//         }
-//     );
-});
+// //             }
+// //         }
+// //     );
+// });
 
 app.post("/testData", (req, res) => {
     const { name, email, productCost, status } = req.body;

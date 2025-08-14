@@ -79,7 +79,6 @@ module.exports = {
         );
 
     },
-
     createUser: (data, callBack) => {
         pool.query(
             `select * from login_master where user_email = ?`,
@@ -101,7 +100,7 @@ module.exports = {
                     var userpassword = data.user_password;
                     var dealership = data.dealership;
                     var password = "user" + Math.floor(Math.random() * 90000 + 10000);
-                    var commissionPerc =  data.commissionPerc == "" ? 0 :  data.commissionPerc;
+                    var commissionPerc = data.commissionPerc == "" ? 0 : data.commissionPerc;
                     pool.query(
                         `INSERT INTO login_master(firstname,lastname,user_email,user_type,user_password,status,date,dealership,ovmic_no,commissionPerc) VALUES (?,?,?,?,?,?,?,?,?,?)`,
                         [
@@ -114,7 +113,7 @@ module.exports = {
                             date,
                             data.dealership,
                             data.ovmic_no,
-                            commissionPerc                   
+                            commissionPerc
                         ],
                         (error) => {
                             if (error) {
@@ -160,14 +159,10 @@ module.exports = {
                                     `
                                 };
 
-
-
                                 var returnRes = {
                                     mail: mailReq,
                                     message: "Data added successfully"
                                 }
-
-
 
                                 return callBack(null, returnRes);
                             }
@@ -287,7 +282,26 @@ FROM
     login_master
 INNER JOIN 
     dealership ON dealership.id = login_master.dealership`  // Query for admin, no user condition
-            : `SELECT 
+            : data.dealership && data.user_email ? `SELECT 
+    login_master.id AS id,
+    login_master.ovmic_no,
+    login_master.firstname,
+    login_master.lastname,
+    login_master.user_email,
+    login_master.user_password,
+    login_master.user_type,
+    login_master.status,
+    login_master.commissionPerc,
+    login_master.date,
+    login_master.blocked AS userblocked,
+    dealership.blocked AS dealershipblocked,
+    login_master.isRelationshipManager,
+    dealership.tradeName,
+    dealership.id AS dealership
+FROM 
+    login_master
+INNER JOIN 
+    dealership ON dealership.accountUserEmail = login_master.user_email WHERE login_master.user_email = ?` : `SELECT 
     login_master.id AS id,
     login_master.ovmic_no,
     login_master.firstname,
@@ -309,7 +323,7 @@ INNER JOIN
 
 
 
-        const params = data.dealership == 0 ? [] : [data.dealership];
+        const params = data.dealership == 0 ? [] : data.dealership && data.user_email ? [data.user_email] : [data.dealership];
 
         pool.query(
             Query,
@@ -399,7 +413,7 @@ INNER JOIN
             }
         );
     },
-    getRelationshipManagerUserPerc:(callBack) => {
+    getRelationshipManagerUserPerc: (callBack) => {
         pool.query(`SELECT 
     d.*, 
     lm.firstname, 
@@ -426,6 +440,69 @@ ORDER BY
                     message = "Data deleted successfully";
                     return callBack(null, results);
                 }
+            }
+        );
+    },
+    updateDealershipUser: (data, callBack) => {
+        pool.query(
+            "UPDATE dealership SET accountUserEmail = ?, firstname = ?, lastname = ? WHERE id = ?",
+            [data.dealershipEmail,data.dealershipFirstname,data.dealershipLastname, data.dealershipId],
+            (err, results) => {
+                if (err) return callBack(err);
+
+                // Sync with user table
+                pool.query(
+                    "UPDATE login_master SET user_email = ?, user_password = ?,firstname = ?, lastname = ?  WHERE user_email = ?",
+                    [data.dealershipEmail, data.dealershipPassword, data.dealershipFirstname,data.dealershipLastname, data.dealershipEmailOld], // Use old email to find correct user
+                    (err2) => {
+                        if (err2) return callBack(err2);
+
+                        var mailReq = {
+                            to: data.dealershipEmail,
+                            subject: "Get Covered Canada Login Credentials",
+                            html: `
+                                    <p>Dear ${data.dealershipFirstname} ${data.dealershipLastname},</p>
+                                    
+                                    <p>Please find your Get Covered Canada credentials below:</p>
+                                    
+                                    <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+                                        <tr>
+                                            <td><b>Portal URL</b></td>
+                                            <td><a href="https://dealers.getcoveredcanada.ca/">https://dealers.getcoveredcanada.ca/</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Username</b></td>
+                                            <td>${data.dealershipEmail}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><b>Password</b></td>
+                                            <td>${data.dealershipPassword}</td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <p>You can log in using the credentials above to access the portal. Once logged in, you’ll have access to tools that simplify warranty registrations.</p>
+                                    
+                                    <p><b>Getting Started:</b></p>
+                                    <ol>
+                                        <li>Visit the Portal URL provided above.</li>
+                                        <li>Log in using your unique username and password.</li>
+                                        <li>Begin exploring the portal and registering warranties.</li>
+                                    </ol>
+                                    
+                                    <p>Should you encounter any issues or have questions while getting started, our support team is here to assist. Feel free to reach out to us at <a href="mailto:support@getcoveredcanada.com">support@getcoveredcanada.com</a> or call 1-800-268-3284.</p>
+                                    
+                                    <p>Best regards,<br>
+                                    The Get Covered Canada Team</p>
+                                    `
+                        };
+
+                        var returnRes = {
+                            mail: mailReq,
+                            message: "Dealership and User updated successfully"
+                        }
+                        return callBack(null, returnRes);
+                    }
+                );
             }
         );
     }

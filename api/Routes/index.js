@@ -12,10 +12,13 @@ const userRouter=require("../User/user.router");
 const productRouter=require("../Products/product.router");
 const salesrepRouter = require("../Salesrep/salesrep.router")
 const notifications = require("../Notifications/notification.router");
+const relationshipManager = require("../RelationshipUser/relationshipUser.router");
+
 
 router.use("/api/auth",authRouter);
 router.use("/api/personalInformation",personalInformationRouter);
 router.use("/api/dealership",dealershipRouter);
+router.use("/api/relationshipManager",relationshipManager);
 router.use("/api/category",categoryRouter);
 router.use("/api/user",userRouter);
 router.use("/api/product",productRouter);

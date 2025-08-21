@@ -1,4 +1,4 @@
-const { creates, gets, getsById, updates, deletesById, createUser,updateDealershipUser,blockById, updateOVMICNO,getRelationshipManagerUser,getRelationshipManagerUserPerc} = require("./user.services");
+const { deletesByIdRelationshipUser,creates, gets, getsById, updates, deletesById, createUser,updateDealershipUser,blockById, updateOVMICNO,getRelationshipManagerUser,getRelationshipManagerUserPerc} = require("./user.services");
 const jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
@@ -7,6 +7,22 @@ module.exports = {
     create: (req, res) => {
         const body = req.body;
         creates(body, (err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    success: 0,
+                    data: err
+                });
+            } else {
+                return res.status(200).json({
+                    sucsess: 1,
+                    message: results
+                });
+            }
+        });
+    },
+    deletesByIdRelationshipUser: (req, res) => {
+        const body = req.body;
+        deletesByIdRelationshipUser(body, (err, results) => {
             if (err) {
                 return res.status(500).json({
                     success: 0,

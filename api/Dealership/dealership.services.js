@@ -178,7 +178,7 @@ module.exports = {
     },
     getsById: (id, callBack) => {
         pool.query(
-            `select tradeName,billingStreet, billingCity,billingCountry,billingZippostalCode,acc_ovmic_no, ovmic_no, accountPhone from dealership where id = ?`,
+            `select tradeName,billingStreet, billingCity,billingCountry,billingZippostalCode,acc_ovmic_no, ovmic_no, accountPhone,accountUserEmail from dealership where id = ?`,
             [id],
             (err, results, fields) => {
                 if (err) {
@@ -413,7 +413,7 @@ module.exports = {
 
 
     },
-    createWarranty: (data, callBack) => {
+     createWarranty: (data, callBack) => {
         const options = {
             timeZone: 'America/Toronto', // Eastern Time Zone
             year: 'numeric',
@@ -1737,6 +1737,7 @@ INNER JOIN
     dealership ON dealership.id = warranty.dealership
 WHERE 
     warranty.Status = 'Closed Won'
+    AND warranty.deleteStatus = 0
     AND dealership.id = ?
     AND DATE_FORMAT(
         CASE
@@ -1765,6 +1766,7 @@ ORDER BY
 FROM warranty
 INNER JOIN dealership ON dealership.id = warranty.dealership
 WHERE warranty.Status = 'Closed Won'
+AND warranty.deleteStatus = 0
   AND dealership.id NOT IN (53, 132)
 GROUP BY Month, dealership.id, dealership.tradeName
 ORDER BY Month DESC`;
@@ -1813,6 +1815,7 @@ INNER JOIN
     dealership ON dealership.id = warranty.dealership
 WHERE 
     warranty.Status = 'Closed Won'
+    AND warranty.deleteStatus = 0
     AND CurrentDate BETWEEN ? AND ?
 GROUP BY 
     DATE_FORMAT(CurrentDate, '%Y-%m'),

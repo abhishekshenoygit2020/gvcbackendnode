@@ -1,4 +1,4 @@
-const { create, getById , get, update,updateDealershipUser, deleteById,createUser,blockById,updateOVMICNO,getRelationshipManagerUser,getRelationshipManagerUserPerc} = require("./user.controller");
+const { create, getById , get, update,deletesByIdRelationshipUser,updateDealershipUser, deleteById,createUser,blockById,updateOVMICNO,getRelationshipManagerUser,getRelationshipManagerUserPerc} = require("./user.controller");
 const router = require("express").Router();
 
 
@@ -12,6 +12,7 @@ router.post("/add", create)
         .post("/createUser",createUser)
         .post("/getRelationshipManagerUser",getRelationshipManagerUser)
         .post("/getRelationshipManagerUserPerc",getRelationshipManagerUserPerc)
+        .post("/deletesByIdRelationshipUser",deletesByIdRelationshipUser)
         .delete("/:id/deleteUser", deleteById);
 
 module.exports = router;

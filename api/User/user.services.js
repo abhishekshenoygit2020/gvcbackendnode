@@ -397,7 +397,7 @@ INNER JOIN
         );
     },
     getRelationshipManagerUser: (callBack) => {
-        pool.query(`SELECT id, firstname, lastname FROM login_master where user_type = 'Relationship Manager' order by id DESC;`,
+        pool.query(`SELECT * FROM login_master where user_type = 'Relationship Manager' OR isRelationshipManager = 1 order by id DESC;`,
             [
 
             ],
@@ -446,14 +446,14 @@ ORDER BY
     updateDealershipUser: (data, callBack) => {
         pool.query(
             "UPDATE dealership SET accountUserEmail = ?, firstname = ?, lastname = ? WHERE id = ?",
-            [data.dealershipEmail,data.dealershipFirstname,data.dealershipLastname, data.dealershipId],
+            [data.dealershipEmail, data.dealershipFirstname, data.dealershipLastname, data.dealershipId],
             (err, results) => {
                 if (err) return callBack(err);
 
                 // Sync with user table
                 pool.query(
                     "UPDATE login_master SET user_email = ?, user_password = ?,firstname = ?, lastname = ?  WHERE user_email = ?",
-                    [data.dealershipEmail, data.dealershipPassword, data.dealershipFirstname,data.dealershipLastname, data.dealershipEmailOld], // Use old email to find correct user
+                    [data.dealershipEmail, data.dealershipPassword, data.dealershipFirstname, data.dealershipLastname, data.dealershipEmailOld], // Use old email to find correct user
                     (err2) => {
                         if (err2) return callBack(err2);
 
@@ -505,7 +505,51 @@ ORDER BY
                 );
             }
         );
-    }
+    },
+    deletesByIdRelationshipUser: (data, callBack) => {
+        // Delete from parent table first
+        pool.query(
+            `DELETE FROM login_master WHERE id = ?`,
+            [data.id],
+            (err, results) => {
+                if (err) {
+                    return callBack(err);
+                } else if (results.affectedRows === 0) {
+                    return callBack("Data not found in parent table");
+                }
+
+                // Check if child exists before deleting
+                pool.query(
+                    `SELECT COUNT(*) AS count FROM relationshipmanagerperc WHERE userId = ?`,
+                    [data.id],
+                    (err, results) => {
+                        if (err) {
+                            return callBack(err);
+                        }
+
+                        if (results[0].count > 0) {
+                            // Delete child if exists
+                            pool.query(
+                                `DELETE FROM relationshipmanagerperc WHERE userId = ?`,
+                                [data.id],
+                                (err) => {
+                                    if (err) {
+                                        return callBack(err);
+                                    }
+                                    return callBack(null, "Deleted Successfully");
+                                }
+                            );
+                        } else {
+                            // No child rows
+                            return callBack(null, "Deleted Successfully");
+                        }
+                    }
+                );
+            }
+        );
+    },
+
+
 };
 
 

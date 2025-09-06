@@ -1,4 +1,4 @@
-const { creates, gets, getsById, updates, deletesById,createsubcategory, updatesubcategory,getsubcategory,createwarrantyprotection,updatewarrantyprotection,getwarrantyprotection,getsubcategorybycat,getwarrantyprobycatsubcat } = require("./category.services");
+const { creates, gets, getsById, updates, deletesById,createsubcategory, updateDealershipSubCategory,updateDealershipCategory,updatesubcategory,getsubcategory,createwarrantyprotection,updatewarrantyprotection,getwarrantyprotection,getsubcategorybycat,getwarrantyprobycatsubcat } = require("./category.services");
 
 
 module.exports = {
@@ -179,6 +179,40 @@ module.exports = {
         const body = req.body;
         const id = req.params.id;
         updatesubcategory(body, id, (err, results) => {
+            if(err){
+                return res.status(500).json({
+                    success:0,
+                    data:err
+                });
+            }else{
+                return res.status(200).json({
+                    sucsess:1,
+                    data:results
+                });
+            }
+        });
+     },
+     updateDealershipCategory:(req,res) => {
+        const body = req.body;
+        const id = req.params.id;
+        updateDealershipCategory(body, id, (err, results) => {
+            if(err){
+                return res.status(500).json({
+                    success:0,
+                    data:err
+                });
+            }else{
+                return res.status(200).json({
+                    sucsess:1,
+                    data:results
+                });
+            }
+        });
+     },
+     updateDealershipSubCategory:(req,res) => {
+        const body = req.body;
+        const id = req.params.id;
+        updateDealershipSubCategory(body, id, (err, results) => {
             if(err){
                 return res.status(500).json({
                     success:0,

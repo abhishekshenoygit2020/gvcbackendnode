@@ -1,4 +1,4 @@
-const { getNotifications } = require("./notification.services");
+const { getNotifications, markAllRead } = require("./notification.services");
 
 module.exports = {
   getNotifications: (req, res) => {
@@ -18,4 +18,22 @@ module.exports = {
       }
     });
   },
+  markAllRead: (req, res) => {
+    const dealershipId = req.params
+    markAllRead((err, results) => {
+      if (err) {
+        console.log(err);
+
+        return res.status(500).json({
+          success: 0,
+          data: err
+        })
+      } else {
+        return res.json({
+          success: 1,
+          message: "All notifications marked as read",
+        });
+      }
+    })
+  }
 };

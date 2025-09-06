@@ -1,4 +1,4 @@
-const { creates, gets, getsById, getUserWarrantyCommissionDetails,getDealershipUsers,getRestoreWarranty,warrantyRestore, saveUserNote, deleteUserNote, getUserNote, getUserWarrantyCommissionDetailsSR, getUserWarrantyGiftDetails, getDealershipDateTotalCost, getDateUserWarrantyCommissionDetailsRM, getDateUserWarrantyCommissionDetailsSR, deletesByIdproduct, deletesByIdcategory, deletesByIdsubcategory, getLogDetails, updateSalesrep, deletesByIdwarrantyprotection, getSoldDataCount, updates, blockDealership, getsByEmail, createWarranty, getPendingWarranty, updateWarranty, getClosedWarranty, deletesByIdWarranty, gettableDataCount, getProductData, getPendingWarrantyGraph, getClosedWonGraph, getDealershipTotalCost, getDealershipMonthTotalCost, getUserWarrantyCommissionDetailsRM } = require("./dealership.services");
+const { creates, gets, getsById, getUserWarrantyCommissionDetails, getDealershipUsers, getBrokerageDpt,getRestoreWarranty, warrantyRestore, saveUserNote, deleteUserNote, getUserNote, getUserWarrantyCommissionDetailsSR, getUserWarrantyGiftDetails, getDealershipDateTotalCost, getDateUserWarrantyCommissionDetailsRM, getDateUserWarrantyCommissionDetailsSR, deletesByIdproduct, deletesByIdcategory, deletesByIdsubcategory, getLogDetails, updateSalesrep, deletesByIdwarrantyprotection, getSoldDataCount, updates, blockDealership, getsByEmail, createWarranty, getPendingWarranty, updateWarranty, getClosedWarranty, deletesByIdWarranty, gettableDataCount, getProductData, getPendingWarrantyGraph, getClosedWonGraph, getDealershipTotalCost, getDealershipMonthTotalCost, getUserWarrantyCommissionDetailsRM } = require("./dealership.services");
 var nodemailer = require('nodemailer');
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const fs = require('fs');
@@ -35,10 +35,17 @@ module.exports = {
                     data: err
                 });
             } else {
-                return res.status(200).json({
-                    sucsess: 1,
-                    data: results
-                });
+
+                if (results.mail == "") {
+                    return res.status(200).json({
+                        sucsess: 1,
+                        data: results.message
+                    });
+                } else {
+                    mail(results, res);
+                }
+
+
             }
         });
     },
@@ -404,7 +411,7 @@ module.exports = {
     },
     getDealershipTotalCost: (req, res) => {
         const data = req.body;
-        getDealershipTotalCost(data,(err, results) => {
+        getDealershipTotalCost(data, (err, results) => {
             if (err) {
                 return res.status(500).json({
                     success: 0,
@@ -421,7 +428,7 @@ module.exports = {
     },
     getDealershipUsers: (req, res) => {
         const data = req.body;
-        getDealershipUsers(data,(err, results) => {
+        getDealershipUsers(data, (err, results) => {
             if (err) {
                 return res.status(500).json({
                     success: 0,
@@ -655,7 +662,23 @@ module.exports = {
             }
         });
     },
-    
+    getBrokerageDpt: (req, res) => {
+        // const data = req.body;
+        getBrokerageDpt((err, results) => {
+            if (err) {
+                return res.status(500).json({
+                    success: 0,
+                    data: err
+                });
+            } else {
+                return res.status(200).json({
+                    success: 1,
+                    data: results
+                });
+            }
+        });
+    },
+
 
 
 
@@ -677,17 +700,22 @@ const mail = (mailReq, res) => {
     var infos = "information";
     var err = "error";
 
-    transporter.sendMail(mailReq, function (error, info) {
+    transporter.sendMail(mailReq.mail, function (error, info) {
         if (error) {
             console.log(error);
             //mailReq.err = error;            
         } else {
 
             console.log('Email sent: ' + info.response);
-            return res.json({
-                success: 1,
-                subject: mailReq.subject,
-                data: "message sent"
+            // return res.json({
+            //     success: 1,
+            //     subject: mailReq.subject,
+            //     data: "message sent"
+            // });
+
+            return res.status(200).json({
+                sucsess: 1,
+                data: mailReq.message
             });
 
         }

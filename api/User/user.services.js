@@ -233,13 +233,14 @@ module.exports = {
             message = "Data is Updated";
         }
         pool.query(
-            `UPDATE login_master SET ovmic_no=? , dealership = ?, commissionPerc = ?, isRelationshipManager = ? , user_type = ? WHERE  id = ?`,
+            `UPDATE login_master SET ovmic_no =? , dealership = ?, commissionPerc = ?, isRelationshipManager = ? , user_type = ? , isBrokerageDpt = ? WHERE  id = ?`,
             [
                 ovmic_no,
                 data.dealership,
                 data.commissionPerc,
                 data.isRelationshipManager,
                 data.userRole,
+                data.isBrokerageDpt,
                 id
             ],
             (err, results) => {
@@ -275,6 +276,7 @@ module.exports = {
     login_master.date,
     login_master.blocked AS userblocked,
     login_master.isRelationshipManager,
+    login_master.isBrokerageDpt,
     dealership.blocked AS dealershipblocked,
     dealership.tradeName,
     dealership.id AS dealership
@@ -296,6 +298,7 @@ INNER JOIN
     login_master.blocked AS userblocked,
     dealership.blocked AS dealershipblocked,
     login_master.isRelationshipManager,
+     login_master.isBrokerageDpt,
     dealership.tradeName,
     dealership.id AS dealership
 FROM 
@@ -314,6 +317,7 @@ INNER JOIN
     login_master.blocked AS userblocked,
     dealership.blocked AS dealershipblocked,
     login_master.isRelationshipManager,
+     login_master.isBrokerageDpt,
     dealership.tradeName,
     dealership.id AS dealership
 FROM 

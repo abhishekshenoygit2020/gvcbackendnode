@@ -70,7 +70,7 @@ module.exports = {
     createwarrantyprotection: (data, callBack) => {
         pool.query(
             `select * from warrantyprotection where warrantyprotection = ? and category = ? and subcategory = ?`,
-            [data.warrantyprotection,data.category,data.subcategory],
+            [data.warrantyprotection, data.category, data.subcategory],
             (err, results) => {
                 var date = new Date();
                 var status = "active";
@@ -153,7 +153,7 @@ module.exports = {
         );
     },
 
-    getsubcategorybycat: (data,callBack) => {
+    getsubcategorybycat: (data, callBack) => {
         pool.query(
             `select * from subcategory where category = ?`,
             [data.id],
@@ -171,10 +171,10 @@ module.exports = {
         );
     },
 
-    getwarrantyprobycatsubcat: (data,callBack) => {
+    getwarrantyprobycatsubcat: (data, callBack) => {
         pool.query(
             `select * from warrantyprotection where category = ? and subcategory = ?`,
-            [data.category,data.subcategory],
+            [data.category, data.subcategory],
             (err, results) => {
                 if (err) {
                     return callBack(err);
@@ -188,10 +188,10 @@ module.exports = {
             }
         );
     },
-  
+
     getwarrantyprotection: (callBack) => {
         pool.query(
-            `SELECT category.categoryName,subcategory.subcategory as subcat ,warrantyprotection.category,warrantyprotection.subcategory,warrantyprotection.warrantyProtection,warrantyprotection.id FROM warrantyprotection INNER JOIN category ON category.id = warrantyprotection.category INNER JOIN subcategory ON subcategory.id = warrantyprotection.subcategory`,
+            `SELECT category.categoryName,subcategory.subcategory as subcat,warrantyprotection.category,warrantyprotection.subcategory,warrantyprotection.warrantyProtection,warrantyprotection.id, warrantyprotection.dealershipVisiblity FROM warrantyprotection INNER JOIN category ON category.id = warrantyprotection.category INNER JOIN subcategory ON subcategory.id = warrantyprotection.subcategory`,
             (err, results) => {
                 if (err) {
                     return callBack(err);
@@ -213,21 +213,21 @@ module.exports = {
                 var date = new Date();
                 var status = "active";
                 // if (results != "") {
-                    pool.query(
-                        `UPDATE category SET categoryName = ? where id = ?`,
-                        [
-                            data.categoryName,
-                            id
-                        ],
-                        (err, results) => {
-                            if (err) {
-                                return callBack(err);
-                            }
-                            else {
-                                return callBack(null, "Data Updated Successfully");
-                            }
+                pool.query(
+                    `UPDATE category SET categoryName = ? where id = ?`,
+                    [
+                        data.categoryName,
+                        id
+                    ],
+                    (err, results) => {
+                        if (err) {
+                            return callBack(err);
                         }
-                    );
+                        else {
+                            return callBack(null, "Data Updated Successfully");
+                        }
+                    }
+                );
                 // } else if (err) {
                 //     return callBack(err);
                 // } 
@@ -302,6 +302,72 @@ module.exports = {
                     return callBack(err);
                 } else {
                     err = "Data Found Duplicate";
+                    return callBack(err);
+                }
+            }
+        );
+
+    },
+    updateDealershipCategory: (data, id, callBack) => {
+        pool.query(
+            `select * from category where id = ?`,
+            [id],
+            (err, results) => {
+                var date = new Date();
+                var status = "active";
+                if (results != "") {
+                    pool.query(
+                        `UPDATE category SET dealershipVisiblity = ? where id = ?`,
+                        [
+                            data.dealershipVisiblity,
+                            id
+                        ],
+                        (err, results) => {
+                            if (err) {
+                                return callBack(err);
+                            }
+                            else {
+                                return callBack(null, "Data Updated Successfully");
+                            }
+                        }
+                    );
+                } else if (err) {
+                    return callBack(err);
+                } else {
+                    err = "Data Not Found";
+                    return callBack(err);
+                }
+            }
+        );
+
+    },
+    updateDealershipSubCategory: (data, id, callBack) => {
+        pool.query(
+            `select * from warrantyprotection where id = ?`,
+            [id],
+            (err, results) => {
+                var date = new Date();
+                var status = "active";
+                if (results != "") {
+                    pool.query(
+                        `UPDATE warrantyprotection SET dealershipVisiblity = ? where id = ?`,
+                        [
+                            data.dealershipVisiblity,
+                            id
+                        ],
+                        (err, results) => {
+                            if (err) {
+                                return callBack(err);
+                            }
+                            else {
+                                return callBack(null, "Data Updated Successfully");
+                            }
+                        }
+                    );
+                } else if (err) {
+                    return callBack(err);
+                } else {
+                    err = "Data Not Found";
                     return callBack(err);
                 }
             }

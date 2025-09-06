@@ -413,7 +413,7 @@ module.exports = {
 
 
     },
-     createWarranty: (data, callBack) => {
+    createWarrantyOld: (data, callBack) => {
         const options = {
             timeZone: 'America/Toronto', // Eastern Time Zone
             year: 'numeric',
@@ -428,7 +428,7 @@ module.exports = {
         var commissionEarned = 0;
 
         const {
-            commercialVehicle,userId, commission, originalCost, giftCardCredit, dealership, user, useromvicno, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+            commercialVehicle, userId, commission, originalCost, giftCardCredit, dealership, user, useromvicno, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
             warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText, highRatioCoverageText, highRatioCoveragePriceText,
             deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText, provinceText, postalCodeText, customerPhoneText,
             customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText, financeCompanyText, vehicleDeliveryDateText,
@@ -489,7 +489,7 @@ module.exports = {
                 comprehensiveFactoryWarrantyValid, language, serviceDate,
                 warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
                 customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
-                financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate, warrantyApplicationDate, currentDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId,commercialVehicle
+                financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate, warrantyApplicationDate, currentDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId, commercialVehicle
 
             ],
                 (err, results) => {
@@ -547,6 +547,315 @@ module.exports = {
 
 
     },
+    createWarranty: (data, callBack) => {
+        const options = {
+            timeZone: 'America/Toronto', // Eastern Time Zone
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        };
+
+        const formatter = new Intl.DateTimeFormat('en-CA', options);
+        const parts = formatter.formatToParts(new Date());
+
+        const currentDate = `${parts[0].value}-${parts[2].value}-${parts[4].value}`;
+        var commissionEarned = 0;
+
+        const {
+            commercialVehicle, userId, commission, originalCost, giftCardCredit, dealership, user, useromvicno, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+            warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText, highRatioCoverageText, highRatioCoveragePriceText,
+            deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText, provinceText, postalCodeText, customerPhoneText,
+            customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText, financeCompanyText, vehicleDeliveryDateText,
+            warrantySoldForText, termsConditonChecked, vinNo, make, model, year, odometer, salePriceofVehicle, comprehensiveFactoryWarrantyValid, language, serviceDate,
+            warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
+            customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
+            financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, warrantyApplicationDate
+        } = data;
+
+        if (parseInt(commission) > 0) {
+            commissionEarned = (warrantySoldFor * parseInt(commission)) / 100;
+        }
+
+
+        pool.query(`SELECT COUNT(*) AS total FROM warranty WHERE Status = "Closed Won"`, (err, countResult) => {
+            if (err) {
+                return callBack(err);
+            }
+
+            let invno = "";
+            let merchantno = "";
+            if (Status === "Closed Won") {
+                invno = countResult[0].total + 1 + 1000; // Increment the count by 1
+                merchantno = parseInt(dealership) + 100; // Increment the count by 1
+            }
+
+
+            var giftCard = 0;
+            // commission = warrantySoldFor - productCost;
+
+            pool.query(
+                `INSERT INTO warranty (
+                        vinNoText, makeText, modelText, yearText, odometerText,                        
+                        salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+                        warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText,    
+                        highRatioCoverageText, highRatioCoveragePriceText,
+                        deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText,
+                              provinceText, postalCodeText, customerPhoneText,
+                              customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText,
+                              financeCompanyText, vehicleDeliveryDateText,
+                              warrantySoldForText, termsConditonChecked, vinNo, make, model, year, odometer, salePriceofVehicle,
+                              comprehensiveFactoryWarrantyValid, language, serviceDate,
+                               warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
+                               customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
+                               financeCompany, vehicleDeliveryDate, warrantySoldFor,Status,packages, packagesTypes, productIndex, productCost, packagesText, productName,user,dealership,currentDate,warrantyApplicationDate,createdDate,useromvicno,invno,merchantno,commission,commissionEarned,giftCardCredit,originalCost,userId,commercialVehicle
+                       )
+                    VALUES (?,?, ?, ?, ?, ?,?,?, ?, ?, ?, ?,?, ?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?,?, ?, ?, ?, ?, ?,?, ?, ?,?, ?,?, ?,?, ?,?, ?,?, ?, ?,?, ?,?, ?,?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?, ?,?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                `, [
+                vinNoText, makeText, modelText, yearText, odometerText,
+                salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+                warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText,
+                highRatioCoverageText, highRatioCoveragePriceText,
+                deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText,
+                provinceText, postalCodeText, customerPhoneText,
+                customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText,
+                financeCompanyText, vehicleDeliveryDateText,
+                warrantySoldForText, termsConditonChecked, vinNo, make, model, year, odometer, salePriceofVehicle,
+                comprehensiveFactoryWarrantyValid, language, serviceDate,
+                warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
+                customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
+                financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate, warrantyApplicationDate, currentDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId, commercialVehicle
+
+            ],
+                (err, results) => {
+                    if (err) {
+                        return callBack(err);
+                    }
+                    else {
+                        if (Status === "Closed Won") {
+                            pool.query(
+                                `SELECT tradeName FROM dealership WHERE id = ?`,
+                                [dealership],
+                                (err, result) => {
+                                    if (err) {
+                                        return callBack(err);
+                                    }
+
+                                    const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
+                                    const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+
+                                    const queryNotification = `
+                                            INSERT INTO notifications (dealershipId, message, status, date)
+                                            VALUES (?, ?, ?, ?)
+                                        `;
+
+                                    pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
+                                        if (error) {
+                                            return callBack(error);
+                                        } else {
+                                            // sending e-mail
+                                            pool.query(
+                                                `SELECT lm.user_email, lm.firstname, lm.lastname
+                                                    FROM relationshipmanagerperc rmp
+                                                    INNER JOIN login_master lm ON lm.id = rmp.userId
+                                                    WHERE rmp.dealershipId = ?`,
+                                                [dealership],
+                                                (err, rmEmails) => {
+                                                    if (err) {
+                                                        console.error("Error fetching RM emails:", err);
+                                                        return callBack(err);
+                                                    }
+
+                                                    if (rmEmails.length > 0) {
+
+                                                        // Combine all RM emails into a single comma-separated string
+                                                        const recipientEmails = rmEmails.map(rm => rm.user_email).join(',');
+
+                                                        // Optional: pick one RM for personalized greeting (or use a generic one)
+                                                        const rm = rmEmails[0];
+
+                                                        const mailReq = {
+                                                            to: recipientEmails, // 👈 multiple recipients in one email
+                                                            subject: "New Warranty Registered",
+                                                            html: `
+                                                            <p>Dear Team,</p>
+                                                            <p>A new warranty has been Closed for dealership <b>${dealershipTradeName}</b>.</p>
+                                                            <ul>
+                                                                <li>Warranty Class: ${warrantyClassText}</li>
+                                                                <li>Warranty Sold For: $${warrantySoldFor}</li>
+                                                                <li>Date: ${currentDate}</li>
+                                                                <li>VIN: ${vinNo}</li>
+                                                                <li>Customer: ${customerFirstName} ${customerLastName}</li>
+                                                            </ul>
+                                                            <p>Best regards,<br>Get Covered Canada Team</p>
+                                                        `
+                                                        };
+
+                                                        let data = {
+                                                            message: "Data Updated Successfully",
+                                                            invCount: invno,
+                                                            merchantno: merchantno,
+                                                            results: results
+                                                        };
+
+                                                        var returnRes = {
+                                                            mail: mailReq,
+                                                            message: data
+                                                        }
+
+                                                        return callBack(null, returnRes);
+                                                    } else {
+                                                        let data = {
+                                                            message: "Data Updated Successfully",
+                                                            invCount: invno,
+                                                            merchantno: merchantno,
+                                                            results: results
+                                                        };
+
+                                                        var returnRes = {
+                                                            mail: "",
+                                                            message: data
+                                                        }
+
+                                                        return callBack(null, returnRes);
+                                                    }
+
+                                                }
+                                            );
+
+                                            // let data = {
+                                            //     message: "Data Updated Successfully",
+                                            //     invCount: invno,
+                                            //     merchantno: merchantno,
+                                            //     results: results
+                                            // };
+                                            // return callBack(null, data);
+                                        }
+                                    });
+                                }
+                            );
+                        } else {
+
+                            pool.query(
+                                `SELECT tradeName FROM dealership WHERE id = ?`,
+                                [dealership],
+                                (err, result) => {
+                                    if (err) {
+                                        return callBack(err);
+                                    }
+
+                                    const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
+                                    const messageNotification = `${dealershipTradeName} has created a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+
+                                    const queryNotification = `
+                                            INSERT INTO notifications (dealershipId, message, status, date)
+                                            VALUES (?, ?, ?, ?)
+                                        `;
+
+                                    pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
+                                        if (error) {
+                                            return callBack(error);
+                                        } else {
+                                            // sending e-mail
+                                            pool.query(
+                                                `SELECT lm.user_email, lm.firstname, lm.lastname
+                                                    FROM relationshipmanagerperc rmp
+                                                    INNER JOIN login_master lm ON lm.id = rmp.userId
+                                                    WHERE rmp.dealershipId = ?`,
+                                                [dealership],
+                                                (err, rmEmails) => {
+                                                    if (err) {
+                                                        console.error("Error fetching RM emails:", err);
+                                                        return callBack(err);
+                                                    }
+
+                                                    if (rmEmails.length > 0) {
+
+
+
+                                                        // Combine all RM emails into a single comma-separated string
+                                                        const recipientEmails = rmEmails.map(rm => rm.user_email).join(',');
+
+                                                        // Optional: pick one RM for personalized greeting (or use a generic one)
+                                                        const rm = rmEmails[0];
+
+                                                        const mailReq = {
+                                                            to: recipientEmails, // 👈 multiple recipients in one email
+                                                            subject: "New Warranty Registered",
+                                                            html: `
+                                                            <p>Dear Team,</p>
+                                                            <p>A new warranty has been created for dealership <b>${dealershipTradeName}</b>.</p>
+                                                            <ul>
+                                                                <li>Warranty Class: ${warrantyClassText}</li>
+                                                                <li>Warranty Sold For: $${warrantySoldFor}</li>
+                                                                <li>Date: ${currentDate}</li>
+                                                                <li>VIN: ${vinNo}</li>
+                                                                <li>Customer: ${customerFirstName} ${customerLastName}</li>
+                                                            </ul>
+                                                            <p>Best regards,<br>Get Covered Canada Team</p>
+                                                        `
+                                                        };
+
+                                                        let data = {
+                                                            message: "Data Updated Successfully",
+                                                            invCount: invno,
+                                                            merchantno: merchantno,
+                                                            results: results
+                                                        };
+
+                                                        var returnRes = {
+                                                            mail: mailReq,
+                                                            message: data
+                                                        }
+
+                                                        return callBack(null, returnRes);
+                                                    } else {
+                                                        let data = {
+                                                            message: "Data Updated Successfully",
+                                                            invCount: invno,
+                                                            merchantno: merchantno,
+                                                            results: results
+                                                        };
+
+                                                        var returnRes = {
+                                                            mail: "",
+                                                            message: data
+                                                        }
+
+                                                        return callBack(null, returnRes);
+                                                    }
+
+
+                                                }
+                                            );
+
+                                            // let data = {
+                                            //     message: "Data Updated Successfully",
+                                            //     invCount: invno,
+                                            //     merchantno: merchantno,
+                                            //     results: results
+                                            // };
+                                            // return callBack(null, data);
+                                        }
+                                    });
+                                }
+                            );
+                            // let data = {
+                            //     message: "Data Added Successfully",
+                            //     invCount: invno,
+                            //     merchantno: merchantno,
+                            //     results: results
+                            // };
+                            // return callBack(null, data);
+                        }
+                    }
+                }
+            );
+
+
+        });
+
+
+    },
     updateWarranty: (data, callBack) => {
         const options = {
             timeZone: 'America/Toronto', // Eastern Time Zone
@@ -563,7 +872,7 @@ module.exports = {
 
 
         const {
-           commercialVehicle,id, userId, giftCardCredit, originalCost, commission, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
+            commercialVehicle, id, userId, giftCardCredit, originalCost, commission, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
             warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText, highRatioCoverageText, highRatioCoveragePriceText,
             deductibleText, deductiblePriceText, customerFirstNameText, customerLastNameText, streetAddressText, townText, provinceText, postalCodeText, customerPhoneText,
             customerEmailText, driverLicenceText, customerLanguageText, dealNotesText, vinCustText, salePriceofVehicleCustText, financeCompanyText, vehicleDeliveryDateText,
@@ -624,7 +933,7 @@ module.exports = {
                     warrantyClass, warrantyType, warrantyProtection, warrantyOption, highRatioCoverage, highRatioCoveragePrice, deductible, deductiblePrice, customerFirstName,
                     customerLastName, streetAddress, town, province, postalCode, customerPhone, customerEmail, driverLicence, customerLanguage, dealNotes, vinCust, salePriceofVehicleCust,
                     financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership, currentDate,
-                    warrantyApplicationDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId,commercialVehicle,  // invno updated if status is "closed won"
+                    warrantyApplicationDate, useromvicno, invno, merchantno, commission, commissionEarned, giftCardCredit, originalCost, userId, commercialVehicle,  // invno updated if status is "closed won"
                     id // WHERE condition
                 ],
                 (err, results) => {
@@ -794,16 +1103,16 @@ module.exports = {
 
         if (data.fromDate && data.toDate) {
             QueryOld = data.dealership == 0
-                ? `SELECT * FROM warranty WHERE Status = 'Closed Won' AND (deleteStatus = 0 OR deleteStatus = '') AND CurrentDate BETWEEN ? AND ?`
-                : `SELECT * FROM warranty WHERE Status = 'Closed Won' AND dealership = ? AND (deleteStatus = 0 OR deleteStatus = '') AND CurrentDate BETWEEN ? AND ?`;
+                ? `SELECT * FROM warranty WHERE Status = 'Closed Won' AND (deleteStatus = 0 OR deleteStatus = '') AND CurrentDate BETWEEN ? AND ? ORDER BY CurrentDate DESC`
+                : `SELECT * FROM warranty WHERE Status = 'Closed Won' AND dealership = ? AND (deleteStatus = 0 OR deleteStatus = '') AND CurrentDate BETWEEN ? AND ? ORDER BY CurrentDate DESC`;
 
             params = data.dealership == 0
                 ? [data.fromDate, data.toDate]
                 : [data.dealership, data.fromDate, data.toDate];
         } else {
             QueryOld = data.dealership == 0
-                ? `SELECT * FROM warranty WHERE Status = 'Closed Won' AND (deleteStatus = 0 OR deleteStatus = '')`
-                : `SELECT * FROM warranty WHERE Status = 'Closed Won' AND dealership = ? AND (deleteStatus = 0 OR deleteStatus = '')`;
+                ? `SELECT * FROM warranty WHERE Status = 'Closed Won' AND (deleteStatus = 0 OR deleteStatus = '')  ORDER BY CurrentDate DESC`
+                : `SELECT * FROM warranty WHERE Status = 'Closed Won' AND dealership = ? AND (deleteStatus = 0 OR deleteStatus = '') ORDER BY CurrentDate DESC`;
 
             params = data.dealership == 0
                 ? []
@@ -958,11 +1267,11 @@ module.exports = {
 
         if (userType == "admin") {
             pool.query(
-                `SELECT 'Pending' AS table_name, COUNT(*) AS row_count FROM warranty where Status = 'Pending'
+                `SELECT 'Pending' AS table_name, COUNT(*) AS row_count FROM warranty where (deleteStatus = 0 OR deleteStatus ="") AND Status = 'Pending'
                  UNION ALL
-                 SELECT 'Closed Won' AS table_name, COUNT(*) AS row_count FROM warranty where Status = 'Closed Won'
+                 SELECT 'Closed Won' AS table_name, COUNT(*) AS row_count FROM warranty where (deleteStatus = 0 OR deleteStatus ="") AND Status = 'Closed Won'
                  UNION ALL
-                 SELECT 'Dealerships' AS table_name, COUNT(*) AS row_count FROM dealership`,
+                 SELECT 'Dealerships' AS table_name, COUNT(*) AS row_count FROM  dealership`,
                 //  [dealership,dealership],
                 (err, results) => {
                     if (err) {
@@ -977,9 +1286,9 @@ module.exports = {
             );
         } else {
             pool.query(
-                `SELECT 'Pending' AS table_name, COUNT(*) AS row_count FROM warranty where Status = 'Pending' and dealership = ?
+                `SELECT 'Pending' AS table_name, COUNT(*) AS row_count FROM warranty where (deleteStatus = 0 OR deleteStatus ="") AND Status = 'Pending' and dealership = ?
                  UNION ALL
-                 SELECT 'Closed Won' AS table_name, COUNT(*) AS row_count FROM warranty where Status = 'Closed Won' and dealership = ?
+                 SELECT 'Closed Won' AS table_name, COUNT(*) AS row_count FROM warranty where (deleteStatus = 0 OR deleteStatus ="") AND  Status = 'Closed Won' and dealership = ?
                  UNION ALL               
                  SELECT 'Users' AS table_name, COUNT(*) AS row_count FROM login_master where dealership = ?`,
                 [dealership, dealership, dealership],
@@ -1002,7 +1311,30 @@ module.exports = {
         var userType = data.userType;
         if (userType == "admin") {
             pool.query(
-                `WITH months AS ( SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL n MONTH), '%Y-%m') AS monthYear FROM ( SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 ) AS numbers ) SELECT m.monthYear, IFNULL(SUM(w.warrantySoldFor), 0) AS total_sale_price FROM months m LEFT JOIN warranty w ON DATE_FORMAT(w.createdDate, '%Y-%m') = m.monthYear AND w.Status = 'Closed Won' GROUP BY m.monthYear ORDER BY m.monthYear`,
+                `SELECT 
+                    m.monthYear,
+                    
+                    IFNULL(SUM(w.warrantySoldFor), 0) AS total_sale_price
+                FROM (
+                    SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL n MONTH), '%Y-%m') AS monthYear
+                    FROM (
+                        SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL 
+                        SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL 
+                        SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+                    ) AS numbers
+                ) m
+                CROSS JOIN (
+                    SELECT 0 AS package_id UNION ALL SELECT 1 UNION ALL SELECT 2
+                ) p
+                LEFT JOIN warranty w 
+                    ON DATE_FORMAT(w.CurrentDate, '%Y-%m') = m.monthYear
+                AND w.packages = p.package_id
+                AND w.Status = 'Closed Won'
+                AND (w.deleteStatus = 0 OR w.deleteStatus = '')
+                AND w.dealership <> 42
+                GROUP BY m.monthYear
+                ORDER BY m.monthYear`,
+                // WITH months AS ( SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL n MONTH), '%Y-%m') AS monthYear FROM ( SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 ) AS numbers ) SELECT m.monthYear, IFNULL(SUM(w.warrantySoldFor), 0) AS total_sale_price FROM months m LEFT JOIN warranty w ON DATE_FORMAT(w.createdDate, '%Y-%m') = m.monthYear AND w.Status = 'Closed Won' GROUP BY m.monthYear ORDER BY m.monthYear,
                 (err, results) => {
                     if (err) {
                         return callBack(err);
@@ -1016,7 +1348,31 @@ module.exports = {
             );
         } else {
             pool.query(
-                `WITH months AS ( SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL n MONTH), '%Y-%m') AS monthYear FROM ( SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 ) AS numbers ) SELECT m.monthYear, IFNULL(SUM(w.warrantySoldFor), 0) AS total_sale_price FROM months m LEFT JOIN warranty w ON DATE_FORMAT(w.createdDate, '%Y-%m') = m.monthYear AND w.Status = 'Closed Won'  AND dealership = ? GROUP BY m.monthYear ORDER BY m.monthYear`, [dealership],
+                // WITH months AS ( SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL n MONTH), '%Y-%m') AS monthYear FROM ( SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11 ) AS numbers ) SELECT m.monthYear, IFNULL(SUM(w.warrantySoldFor), 0) AS total_sale_price FROM months m LEFT JOIN warranty w ON DATE_FORMAT(w.createdDate, '%Y-%m') = m.monthYear AND w.Status = 'Closed Won'  AND dealership = ? GROUP BY m.monthYear ORDER BY m.monthYear, [dealership],
+                `SELECT 
+                    m.monthYear,
+                    
+                    IFNULL(SUM(w.warrantySoldFor), 0) AS total_sale_price
+                FROM (
+                    SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL n MONTH), '%Y-%m') AS monthYear
+                    FROM (
+                        SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL 
+                        SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL 
+                        SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+                    ) AS numbers
+                ) m
+                CROSS JOIN (
+                    SELECT 0 AS package_id UNION ALL SELECT 1 UNION ALL SELECT 2
+                ) p
+                LEFT JOIN warranty w 
+                    ON DATE_FORMAT(w.CurrentDate, '%Y-%m') = m.monthYear
+                AND w.packages = p.package_id
+                AND w.Status = 'Closed Won'
+                AND (w.deleteStatus = 0 OR w.deleteStatus = '')
+                AND w.dealership <> 42
+                AND w.dealership = ?
+                GROUP BY m.monthYear
+                ORDER BY m.monthYear`,[dealership],
                 (err, results) => {
                     if (err) {
                         return callBack(err);
@@ -1840,7 +2196,34 @@ ORDER BY
     },
     getUserWarrantyCommissionDetailsRM: (callBack) => {
         pool.query(
-            `SELECT DATE_FORMAT(warranty.CurrentDate, '%Y-%m') AS Month, d.id AS dealership, d.tradeName, FORMAT(SUM(warranty.productCost), 2) AS totalCost, COUNT(*) AS warrantyCount, lm.firstname, lm.lastname, d.relationshipManagerPerc as commissionPerc,ROUND(SUM(warranty.productCost) *  d.relationshipManagerPerc / 100, 2) AS commissionEarned FROM warranty INNER JOIN dealership d ON d.id = warranty.dealership INNER JOIN login_master lm ON d.relationshipManager = lm.id WHERE warranty.Status = 'Closed Won' GROUP BY DATE_FORMAT(warranty.CurrentDate, '%Y-%m'), d.id, d.tradeName ORDER BY Month DESC`,
+            `SELECT 
+    DATE_FORMAT(warranty.CurrentDate, '%Y-%m') AS Month,
+    d.id AS dealershipId,
+    d.tradeName,
+    lm.id AS managerId,
+    lm.firstname,
+    lm.lastname,
+    FORMAT(SUM(warranty.productCost), 2) AS totalCost,
+    COUNT(*) AS warrantyCount,
+    r.relationsipPerc AS commissionPerc,
+    ROUND(SUM(warranty.productCost) * r.relationsipPerc / 100, 2) AS commissionEarned
+FROM warranty
+INNER JOIN dealership d 
+    ON d.id = warranty.dealership
+INNER JOIN relationshipmanagerperc r
+    ON r.dealershipId = d.id                 -- ✅ fetch managers mapped to this dealership
+INNER JOIN login_master lm 
+    ON lm.id = r.userId                       -- ✅ map % to actual user
+WHERE 
+    warranty.Status = 'Closed Won'
+    AND warranty.CurrentDate >= lm.date
+GROUP BY 
+    DATE_FORMAT(warranty.CurrentDate, '%Y-%m'),
+    d.id, d.tradeName,
+    lm.id, lm.firstname, lm.lastname,
+    r.relationsipPerc
+ORDER BY 
+    Month DESC`,
             [],
             (err, results) => {
                 if (err) {
@@ -1927,10 +2310,7 @@ ORDER BY
         if (data.fromDate && data.toDate) {
             // ✅ With Date Filter
             query = `SELECT 
-    DATE_FORMAT(w.CurrentDate, '%Y-%m') AS Month,
-    lm.firstname,
-    lm.lastname,
-    lm.id,
+    DATE_FORMAT(w.CurrentDate, '%Y-%m') AS Month,   
     COUNT(*) AS warrantyCount,
     d.accountName,
     FORMAT(SUM(w.productCost), 2) AS ProductCost,
@@ -1942,9 +2322,10 @@ INNER JOIN dealership d ON w.dealership = d.id
 WHERE 
     w.Status = 'Closed Won'
     AND w.giftCardCredit > 0
+    AND w.dealership <> 42
     AND w.CurrentDate BETWEEN ? AND ?
 GROUP BY 
-    Month, lm.firstname, lm.lastname, lm.id, d.accountName
+    Month, d.accountName
 ORDER BY 
     Month DESC`;
             params = [data.fromDate, data.toDate];
@@ -1953,10 +2334,7 @@ ORDER BY
             // ✅ Without Date Filter
             query = `
             SELECT 
-    DATE_FORMAT(w.CurrentDate, '%Y-%m') AS Month,
-    lm.firstname,
-    lm.lastname,
-    lm.id,
+    DATE_FORMAT(w.CurrentDate, '%Y-%m') AS Month,   
     COUNT(*) AS warrantyCount,
     d.accountName,
     FORMAT(SUM(w.productCost), 2) AS ProductCost,
@@ -1968,8 +2346,9 @@ INNER JOIN dealership d ON w.dealership = d.id
 WHERE 
     w.Status = 'Closed Won'
     AND w.giftCardCredit > 0
+    AND w.dealership <> 42
 GROUP BY 
-    Month, lm.firstname, lm.lastname, lm.id, d.accountName
+    Month, d.accountName
 ORDER BY 
     Month DESC
         `;
@@ -2037,7 +2416,17 @@ ORDER BY
             if (err) return callBack(err);
             return callBack(null, { success: 1, message: "Deleted", data: results });
         });
-    }
+    },
+    getBrokerageDpt: (callback) => {
+        pool.query(
+            `SELECT id, firstname, lastname
+            FROM login_master WHERE isBrokerageDpt = 1`,
+            (err, results) => {
+                if (err) return callback(err, null);
+                return callback(null, results);
+            }
+        )
+    },
 
 
 

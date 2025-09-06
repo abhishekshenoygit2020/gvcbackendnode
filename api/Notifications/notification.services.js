@@ -15,4 +15,16 @@ module.exports = {
       }
     );
   },
+  markAllRead: (callBack) => {
+    pool.query(
+      `UPDATE notifications SET status = 1 `,
+      (err, results) => {
+        if (err) {
+          return callBack(err)
+        } else {
+          return callBack(null, results)
+        }
+      }
+    )
+  }
 };

@@ -1,4 +1,4 @@
-const { create, getSoldDataCount,deletesByIdproduct,saveUserNote,getDealershipUsers,deleteUserNote,getUserNote,getRestoreWarranty,warrantyRestore,getUserWarrantyCommissionDetailsSR,getUserWarrantyGiftDetails,getDateUserWarrantyCommissionDetailsSR,getDateUserWarrantyCommissionDetailsRM,getUserWarrantyCommissionDetails,getDealershipDateTotalCost,deletesByIdcategory,getLogDetails,deletesByIdsubcategory,deletesByIdwarrantyprotection,getById ,updateSalesrep, get, update, blockDealership,getByEmail,createWarranty,getPendingWarrantyGraph,getPendingWarranty,updateWarranty,getClosedWarranty,deletesByIdWarranty,gettableDataCount,getProductData,getClosedWonGraph,getDealershipTotalCost,getDealershipMonthTotalCost,getUserWarrantyCommissionDetailsRM} = require("./dealership.controller");
+const { create, getSoldDataCount,deletesByIdproduct,saveUserNote,getDealershipUsers,getBrokerageDpt,deleteUserNote,getUserNote,getRestoreWarranty,warrantyRestore,getUserWarrantyCommissionDetailsSR,getUserWarrantyGiftDetails,getDateUserWarrantyCommissionDetailsSR,getDateUserWarrantyCommissionDetailsRM,getUserWarrantyCommissionDetails,getDealershipDateTotalCost,deletesByIdcategory,getLogDetails,deletesByIdsubcategory,deletesByIdwarrantyprotection,getById ,updateSalesrep, get, update, blockDealership,getByEmail,createWarranty,getPendingWarrantyGraph,getPendingWarranty,updateWarranty,getClosedWarranty,deletesByIdWarranty,gettableDataCount,getProductData,getClosedWonGraph,getDealershipTotalCost,getDealershipMonthTotalCost,getUserWarrantyCommissionDetailsRM} = require("./dealership.controller");
 const router = require("express").Router();
 
 
@@ -38,6 +38,7 @@ router.post("/add", create)
         .post("/getUserWarrantyGiftDetails",getUserWarrantyGiftDetails)
         .post("/warrantyRestore",warrantyRestore)
         .post("/getUserWarrantyCommissionDetails",getUserWarrantyCommissionDetails)
+        .post("/getBrokerageDpt", getBrokerageDpt)
         .post("/blockDealership", blockDealership);
 
 module.exports = router;

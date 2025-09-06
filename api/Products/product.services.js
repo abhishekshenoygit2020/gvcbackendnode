@@ -440,7 +440,8 @@ ON
     },
     getByCategoryId: (id, callBack) => {
         pool.query(
-            `Select subcategory FROM product_details WHERE category = ?`,
+            `SELECT w.dealershipVisiblity,p.subcategory FROM product_details p INNER JOIN warrantyprotection w  ON p.warrantyprotection = w.id where p.category = ?`,
+            // `Select subcategory FROM product_details WHERE category = ?`,
             [id],
             (err, results) => {
                 if (err) {

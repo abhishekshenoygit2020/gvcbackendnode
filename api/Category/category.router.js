@@ -1,4 +1,4 @@
-const { create, getById , get, update, deleteById,createsubcategory,updatesubcategory,getsubcategory,createwarrantyprotection,updatewarrantyprotection,getwarrantyprotection,getsubcategorybycat,getwarrantyprobycatsubcat} = require("./category.controller");
+const { create, getById , get, update, deleteById,createsubcategory,updateDealershipCategory,updateDealershipSubCategory,updatesubcategory,getsubcategory,createwarrantyprotection,updatewarrantyprotection,getwarrantyprotection,getsubcategorybycat,getwarrantyprobycatsubcat} = require("./category.controller");
 const router = require("express").Router();
 
 
@@ -14,6 +14,8 @@ router.post("/add", create)
         .post("/:id/update", update)
         .post("/:id/updateSubcategory", updatesubcategory)
         .post("/:id/updatewarrantyprotection", updatewarrantyprotection)
+        .post("/:id/updateDealershipCategory", updateDealershipCategory)
+        .post("/:id/updateDealershipSubCategory", updateDealershipSubCategory)
         .delete("/:id/delete", deleteById);
 
 module.exports = router;

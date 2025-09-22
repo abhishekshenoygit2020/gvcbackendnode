@@ -576,6 +576,9 @@ module.exports = {
             commissionEarned = (warrantySoldFor * parseInt(commission)) / 100;
         }
 
+        if (dealership == 0) {
+            return callBack("Super admin cannot create Warranty!");
+        }
 
         pool.query(`SELECT COUNT(*) AS total FROM warranty WHERE Status = "Closed Won"`, (err, countResult) => {
             if (err) {
@@ -632,51 +635,139 @@ module.exports = {
                     }
                     else {
                         if (Status === "Closed Won") {
-                            pool.query(
-                                `SELECT tradeName FROM dealership WHERE id = ?`,
-                                [dealership],
-                                (err, result) => {
-                                    if (err) {
-                                        return callBack(err);
-                                    }
 
-                                    const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
-                                    const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+                            const fetchQuery = `
+                                    SELECT l.firstname,l.lastname , r.userId , r.dealershipId, 
+                                    r.relationsipPerc, d.tradeName FROM login_master l INNER JOIN relationshipmanagerperc r ON l.id = r.userId  
+                                    INNER JOIN dealership d on d.id =  r.dealershipId where dealershipId = ?
+                                `;
 
-                                    const queryNotification = `
+                            pool.query(fetchQuery, [dealership], (error, rows) => {
+                                if (error) {
+                                    return callBack(error);
+                                }
+
+                                if (rows.length === 0) {
+                                    // return callBack(new Error("No relationship manager found for this dealership"));
+
+                                    pool.query(
+                                        `SELECT tradeName FROM dealership WHERE id = ?`,
+                                        [dealership],
+                                        (err, result) => {
+                                            if (err) {
+                                                return callBack(err);
+                                            }
+
+                                            const dealershipTradeName = result.length > 0 ? result[0].tradeName : '(Tradename Not Defined)';
+                                            const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+
+                                            const queryNotification = `
                                             INSERT INTO notifications (dealershipId, message, status, date)
                                             VALUES (?, ?, ?, ?)
                                         `;
 
-                                    pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
-                                        if (error) {
-                                            return callBack(error);
+                                            pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
+                                                if (error) {
+                                                    return callBack(error);
+                                                } else {
+                                                    let data = {
+                                                        message: "Data Updated Successfully",
+                                                        invCount: invno,
+                                                        merchantno: merchantno
+                                                    };
+                                                    return callBack(null, data);
+                                                }
+                                            });
+                                        }
+                                    );
+
+                                }
+
+                                let insertCount = 0;
+                                let errors = [];
+                                let totalManagers = rows.length;
+
+                                rows.forEach((relData) => {
+                                    const commissionEarned = warrantySoldFor * (relData.relationsipPerc / 100);
+
+                                    const insertQuery = `
+                                            INSERT INTO commissionearned
+                                                (vinNO, relationshipManager, dealership, yearMonth, warrantySold, commission, commissionEarned) 
+                                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                                            `;
+
+                                    const values = [
+                                        vinNoText,
+                                        relData.firstname + " " + relData.lastname,
+                                        relData.tradeName,
+                                        currentDate,
+                                        warrantySoldFor,
+                                        relData.relationsipPerc,
+                                        commissionEarned
+                                    ];
+
+                                    pool.query(insertQuery, values, (err, results) => {
+                                        if (err) {
+                                            errors.push(err);
                                         } else {
-                                            // sending e-mail
-                                            pool.query(
-                                                `SELECT lm.user_email, lm.firstname, lm.lastname
+                                            insertCount++;
+                                        }
+
+                                        // ✅ Respond only when all inserts attempted
+                                        if (insertCount + errors.length === totalManagers) {
+                                            if (errors.length > 0) {
+                                                return callBack(errors);
+                                            } else {
+                                                // return callBack(null, {
+                                                //     message: "Commission inserted successfully for all managers",
+                                                //     inserted: insertCount
+                                                // });
+
+                                                pool.query(
+                                                    `SELECT tradeName FROM dealership WHERE id = ?`,
+                                                    [dealership],
+                                                    (err, result) => {
+                                                        if (err) {
+                                                            return callBack(err);
+                                                        }
+
+                                                        const dealershipTradeName = result.length > 0 ? result[0].tradeName : '(Tradename Not defined)';
+                                                        const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+
+                                                        const queryNotification = `
+                                            INSERT INTO notifications (dealershipId, message, status, date)
+                                            VALUES (?, ?, ?, ?)
+                                        `;
+
+                                                        pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
+                                                            if (error) {
+                                                                return callBack(error);
+                                                            } else {
+                                                                // sending e-mail
+                                                                pool.query(
+                                                                    `SELECT lm.user_email, lm.firstname, lm.lastname
                                                     FROM relationshipmanagerperc rmp
                                                     INNER JOIN login_master lm ON lm.id = rmp.userId
                                                     WHERE rmp.dealershipId = ?`,
-                                                [dealership],
-                                                (err, rmEmails) => {
-                                                    if (err) {
-                                                        console.error("Error fetching RM emails:", err);
-                                                        return callBack(err);
-                                                    }
+                                                                    [dealership],
+                                                                    (err, rmEmails) => {
+                                                                        if (err) {
+                                                                            console.error("Error fetching RM emails:", err);
+                                                                            return callBack(err);
+                                                                        }
 
-                                                    if (rmEmails.length > 0) {
+                                                                        if (rmEmails.length > 0) {
 
-                                                        // Combine all RM emails into a single comma-separated string
-                                                        const recipientEmails = rmEmails.map(rm => rm.user_email).join(',');
+                                                                            // Combine all RM emails into a single comma-separated string
+                                                                            const recipientEmails = rmEmails.map(rm => rm.user_email).join(',');
 
-                                                        // Optional: pick one RM for personalized greeting (or use a generic one)
-                                                        const rm = rmEmails[0];
+                                                                            // Optional: pick one RM for personalized greeting (or use a generic one)
+                                                                            const rm = rmEmails[0];
 
-                                                        const mailReq = {
-                                                            to: recipientEmails, // 👈 multiple recipients in one email
-                                                            subject: "New Warranty Registered",
-                                                            html: `
+                                                                            const mailReq = {
+                                                                                to: recipientEmails, // 👈 multiple recipients in one email
+                                                                                subject: "New Warranty Registered",
+                                                                                html: `
                                                             <p>Dear Team,</p>
                                                             <p>A new warranty has been Closed for dealership <b>${dealershipTradeName}</b>.</p>
                                                             <ul>
@@ -688,51 +779,59 @@ module.exports = {
                                                             </ul>
                                                             <p>Best regards,<br>Get Covered Canada Team</p>
                                                         `
-                                                        };
+                                                                            };
 
-                                                        let data = {
-                                                            message: "Data Updated Successfully",
-                                                            invCount: invno,
-                                                            merchantno: merchantno,
-                                                            results: results
-                                                        };
+                                                                            let data = {
+                                                                                message: "Data Updated Successfully",
+                                                                                invCount: invno,
+                                                                                merchantno: merchantno,
+                                                                                results: results
+                                                                            };
 
-                                                        var returnRes = {
-                                                            mail: mailReq,
-                                                            message: data
-                                                        }
+                                                                            var returnRes = {
+                                                                                mail: mailReq,
+                                                                                message: data
+                                                                            }
 
-                                                        return callBack(null, returnRes);
-                                                    } else {
-                                                        let data = {
-                                                            message: "Data Updated Successfully",
-                                                            invCount: invno,
-                                                            merchantno: merchantno,
-                                                            results: results
-                                                        };
+                                                                            return callBack(null, returnRes);
+                                                                        } else {
+                                                                            let data = {
+                                                                                message: "Data Updated Successfully",
+                                                                                invCount: invno,
+                                                                                merchantno: merchantno,
+                                                                                results: results
+                                                                            };
 
-                                                        var returnRes = {
-                                                            mail: "",
-                                                            message: data
-                                                        }
+                                                                            var returnRes = {
+                                                                                mail: "",
+                                                                                message: data
+                                                                            }
 
-                                                        return callBack(null, returnRes);
+                                                                            return callBack(null, returnRes);
+                                                                        }
+
+                                                                    }
+                                                                );
+
+                                                                // let data = {
+                                                                //     message: "Data Updated Successfully",
+                                                                //     invCount: invno,
+                                                                //     merchantno: merchantno,
+                                                                //     results: results
+                                                                // };
+                                                                // return callBack(null, data);
+                                                            }
+                                                        });
                                                     }
+                                                );
 
-                                                }
-                                            );
 
-                                            // let data = {
-                                            //     message: "Data Updated Successfully",
-                                            //     invCount: invno,
-                                            //     merchantno: merchantno,
-                                            //     results: results
-                                            // };
-                                            // return callBack(null, data);
+                                            }
                                         }
                                     });
-                                }
-                            );
+                                });
+                            });
+
                         } else {
 
                             pool.query(
@@ -743,7 +842,7 @@ module.exports = {
                                         return callBack(err);
                                     }
 
-                                    const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
+                                    const dealershipTradeName = result.length > 0 ? result[0].tradeName : '(Tradename Not Defined)';
                                     const messageNotification = `${dealershipTradeName} has created a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
 
                                     const queryNotification = `
@@ -856,7 +955,7 @@ module.exports = {
 
 
     },
-    updateWarranty: (data, callBack) => {
+    updateWarranty: async (data, callBack) => {
         const options = {
             timeZone: 'America/Toronto', // Eastern Time Zone
             year: 'numeric',
@@ -870,7 +969,6 @@ module.exports = {
         const currentDate = `${parts[0].value}-${parts[2].value}-${parts[4].value}`;
         var commissionEarned = 0;
 
-
         const {
             commercialVehicle, id, userId, giftCardCredit, originalCost, commission, vinNoText, makeText, modelText, yearText, odometerText, salePriceofVehicleText, comprehensiveFactoryWarrantyValidText, languageText, serviceDateText,
             warrantyClassText, warrantyTypeText, warrantyProtectionText, warrantyOptionText, warrantyOptionPriceText, highRatioCoverageText, highRatioCoveragePriceText,
@@ -882,6 +980,10 @@ module.exports = {
             financeCompany, vehicleDeliveryDate, warrantySoldFor, Status, packages, packagesTypes, productIndex, productCost, packagesText, productName, user, dealership,
             warrantyApplicationDate, useromvicno, oldUser
         } = data;
+
+        if (dealership == 0) {
+            return callBack("Super admin cannot create Warranty");
+        }
 
         if (parseInt(commission) > 0) {
             commissionEarned = (warrantySoldFor * parseInt(commission)) / 100;
@@ -1009,36 +1111,130 @@ module.exports = {
 
                         } else {
                             if (Status === "Closed Won") {
-                                pool.query(
-                                    `SELECT tradeName FROM dealership WHERE id = ?`,
-                                    [dealership],
-                                    (err, result) => {
-                                        if (err) {
-                                            return callBack(err);
-                                        }
 
-                                        const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
-                                        const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
 
-                                        const queryNotification = `
-                INSERT INTO notifications (dealershipId, message, status, date)
-                VALUES (?, ?, ?, ?)
-            `;
+                                const fetchQuery = `
+                                    SELECT l.firstname,l.lastname , r.userId , r.dealershipId, 
+                                    r.relationsipPerc, d.tradeName FROM login_master l INNER JOIN relationshipmanagerperc r ON l.id = r.userId  
+                                    INNER JOIN dealership d on d.id =  r.dealershipId where dealershipId = ?
+                                `;
 
-                                        pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
-                                            if (error) {
-                                                return callBack(error);
+                                pool.query(fetchQuery, [dealership], (error, rows) => {
+                                    if (error) {
+                                        return callBack(error);
+                                    }
+
+                                    if (rows.length === 0) {
+                                        // return callBack(new Error("No relationship manager found for this dealership"));
+
+                                        pool.query(
+                                            `SELECT tradeName FROM dealership WHERE id = ?`,
+                                            [dealership],
+                                            (err, result) => {
+                                                if (err) {
+                                                    return callBack(err);
+                                                }
+
+                                                const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
+                                                const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+
+                                                const queryNotification = `
+                                            INSERT INTO notifications (dealershipId, message, status, date)
+                                            VALUES (?, ?, ?, ?)
+                                        `;
+
+                                                pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
+                                                    if (error) {
+                                                        return callBack(error);
+                                                    } else {
+                                                        let data = {
+                                                            message: "Data Updated Successfully",
+                                                            invCount: invno,
+                                                            merchantno: merchantno
+                                                        };
+                                                        return callBack(null, data);
+                                                    }
+                                                });
+                                            }
+                                        );
+
+                                    }
+
+                                    let insertCount = 0;
+                                    let errors = [];
+                                    let totalManagers = rows.length;
+
+                                    rows.forEach((relData) => {
+                                        const commissionEarned = warrantySoldFor * (relData.relationsipPerc / 100);
+
+                                        const insertQuery = `
+                                            INSERT INTO commissionearned
+                                                (vinNO, relationshipManager, dealership, yearMonth, warrantySold, commission, commissionEarned) 
+                                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                                            `;
+
+                                        const values = [
+                                            vinNoText,
+                                            relData.firstname + " " + relData.lastname,
+                                            relData.tradeName,
+                                            currentDate,
+                                            warrantySoldFor,
+                                            relData.relationsipPerc,
+                                            commissionEarned
+                                        ];
+
+                                        pool.query(insertQuery, values, (err, results) => {
+                                            if (err) {
+                                                errors.push(err);
                                             } else {
-                                                let data = {
-                                                    message: "Data Updated Successfully",
-                                                    invCount: invno,
-                                                    merchantno: merchantno
-                                                };
-                                                return callBack(null, data);
+                                                insertCount++;
+                                            }
+
+                                            // ✅ Respond only when all inserts attempted
+                                            if (insertCount + errors.length === totalManagers) {
+                                                if (errors.length > 0) {
+                                                    return callBack(errors);
+                                                } else {
+                                                    // return callBack(null, {
+                                                    //     message: "Commission inserted successfully for all managers",
+                                                    //     inserted: insertCount
+                                                    // });
+
+                                                    pool.query(
+                                                        `SELECT tradeName FROM dealership WHERE id = ?`,
+                                                        [dealership],
+                                                        (err, result) => {
+                                                            if (err) {
+                                                                return callBack(err);
+                                                            }
+
+                                                            const dealershipTradeName = result.length > 0 ? result[0].tradeName : '';
+                                                            const messageNotification = `${dealershipTradeName} has closed a ${warrantyClassText} for ${warrantySoldFor} on ${currentDate}`;
+
+                                                            const queryNotification = `
+                                                                INSERT INTO notifications (dealershipId, message, status, date)
+                                                                VALUES (?, ?, ?, ?)
+                                                            `;
+
+                                                            pool.query(queryNotification, [dealership, messageNotification, 0, currentDate], (error) => {
+                                                                if (error) {
+                                                                    return callBack(error);
+                                                                } else {
+                                                                    let data = {
+                                                                        message: "Data Updated Successfully",
+                                                                        invCount: invno,
+                                                                        merchantno: merchantno
+                                                                    };
+                                                                    return callBack(null, data);
+                                                                }
+                                                            });
+                                                        }
+                                                    );
+                                                }
                                             }
                                         });
-                                    }
-                                );
+                                    });
+                                });
                             } else {
                                 let data = {
                                     message: "Data Updated Successfully",
@@ -1372,7 +1568,7 @@ module.exports = {
                 AND w.dealership <> 42
                 AND w.dealership = ?
                 GROUP BY m.monthYear
-                ORDER BY m.monthYear`,[dealership],
+                ORDER BY m.monthYear`, [dealership],
                 (err, results) => {
                     if (err) {
                         return callBack(err);
@@ -2195,8 +2391,9 @@ ORDER BY
         );
     },
     getUserWarrantyCommissionDetailsRM: (callBack) => {
-        pool.query(
-            `SELECT 
+
+        //old query
+        var queryNW = `SELECT 
     DATE_FORMAT(warranty.CurrentDate, '%Y-%m') AS Month,
     d.id AS dealershipId,
     d.tradeName,
@@ -2223,7 +2420,11 @@ GROUP BY
     lm.id, lm.firstname, lm.lastname,
     r.relationsipPerc
 ORDER BY 
-    Month DESC`,
+    Month DESC`;
+        var query2 = `SELECT * FROM commissionearned`;
+
+        pool.query(
+            queryNW,
             [],
             (err, results) => {
                 if (err) {
@@ -2285,8 +2486,10 @@ ORDER BY
         );
     },
     getDateUserWarrantyCommissionDetailsRM: (data, callBack) => {
+
         pool.query(
-            `SELECT DATE_FORMAT(warranty.CurrentDate, '%Y-%m') AS Month, d.id AS dealership, d.tradeName, FORMAT(SUM(warranty.productCost), 2) AS totalCost, COUNT(*) AS warrantyCount, lm.firstname, lm.lastname, d.relationshipManagerPerc as commissionPerc,ROUND(SUM(warranty.productCost) * d.relationshipManagerPerc / 100, 2) AS commissionEarned FROM warranty INNER JOIN dealership d ON d.id = warranty.dealership INNER JOIN login_master lm ON d.relationshipManager = lm.id WHERE warranty.Status = 'Closed Won' AND warranty.CurrentDate BETWEEN ? AND ? GROUP BY DATE_FORMAT(warranty.CurrentDate, '%Y-%m'), d.id, d.tradeName ORDER BY Month DESC;`,
+            `SELECT DATE_FORMAT(warranty.CurrentDate, '%Y-%m') AS Month, d.id AS dealership, d.tradeName, FORMAT(SUM(warranty.productCost), 2) AS totalCost, COUNT(*) AS warrantyCount, lm.firstname, lm.lastname, d.relationshipManagerPerc as commissionPerc,ROUND(SUM(warranty.productCost) * d.relationshipManagerPerc / 100, 2) AS commissionEarned FROM warranty INNER JOIN dealership d ON d.id = warranty.dealership INNER JOIN login_master lm ON d.relationshipManager = lm.id WHERE warranty.Status = 'Closed Won' AND warranty.CurrentDate BETWEEN ? AND ? GROUP BY DATE_FORMAT(warranty.CurrentDate, '%Y-%m'), d.id, d.tradeName ORDER BY Month DESC`,
+            // `SELECT * FROM commissionearned where yearMonth BETWEEN ? AND ?`,
             [
                 data.fromDate, data.toDate
             ],

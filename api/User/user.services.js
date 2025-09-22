@@ -283,7 +283,7 @@ module.exports = {
 FROM 
     login_master
 INNER JOIN 
-    dealership ON dealership.id = login_master.dealership`  // Query for admin, no user condition
+    dealership ON dealership.id = login_master.dealership WHERE login_master.deleteStatus = 0`  // Query for admin, no user condition
             : data.dealership && data.user_email ? `SELECT 
     login_master.id AS id,
     login_master.ovmic_no,
@@ -298,13 +298,13 @@ INNER JOIN
     login_master.blocked AS userblocked,
     dealership.blocked AS dealershipblocked,
     login_master.isRelationshipManager,
-     login_master.isBrokerageDpt,
+    login_master.isBrokerageDpt,
     dealership.tradeName,
     dealership.id AS dealership
 FROM 
     login_master
 INNER JOIN 
-    dealership ON dealership.accountUserEmail = login_master.user_email WHERE login_master.user_email = ?` : `SELECT 
+    dealership ON dealership.accountUserEmail = login_master.user_email WHERE login_master.user_email = ?  AND login_master.deleteStatus = 0` : `SELECT 
     login_master.id AS id,
     login_master.ovmic_no,
     login_master.firstname,
@@ -323,7 +323,7 @@ INNER JOIN
 FROM 
     login_master
 INNER JOIN 
-    dealership ON dealership.id = login_master.dealership WHERE login_master.dealership = ?`;
+    dealership ON dealership.id = login_master.dealership WHERE login_master.dealership = ? AND login_master.deleteStatus = 0`;
 
 
 
@@ -401,7 +401,7 @@ INNER JOIN
         );
     },
     getRelationshipManagerUser: (callBack) => {
-        pool.query(`SELECT * FROM login_master where user_type = 'Relationship Manager' OR isRelationshipManager = 1 order by id DESC;`,
+        pool.query(`SELECT * FROM login_master where deleteStatus = 0 AND user_type = 'Relationship Manager' OR isRelationshipManager = 1 order by id DESC;`,
             [
 
             ],
@@ -513,8 +513,8 @@ ORDER BY
     deletesByIdRelationshipUser: (data, callBack) => {
         // Delete from parent table first
         pool.query(
-            `DELETE FROM login_master WHERE id = ?`,
-            [data.id],
+            `Update login_master set deleteStatus = ?  WHERE id = ?`,
+            [1, data.id],
             (err, results) => {
                 if (err) {
                     return callBack(err);
